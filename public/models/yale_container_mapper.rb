@@ -1,5 +1,7 @@
 class YaleAeonContainerMapper < AeonRecordMapper
 
+    register_for_record_type(Container)
+
     def record_fields
       mappings = {}
 
