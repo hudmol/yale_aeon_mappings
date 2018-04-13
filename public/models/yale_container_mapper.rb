@@ -2,6 +2,13 @@ class YaleAeonContainerMapper < AeonRecordMapper
 
     register_for_record_type(Container)
 
+    def initialize(record)
+      super
+
+      @record.json['notes'] = @record.json['active_restrictions'].map {|a| a['linked_records']['_resolved']['notes']}.flatten
+    end
+
+
     def record_fields
       mappings = {}
 
