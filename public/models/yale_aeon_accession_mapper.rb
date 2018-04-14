@@ -1,4 +1,4 @@
-class YaleAeonAOMapper < AeonArchivalObjectMapper
+class YaleAeonAccessionMapper < AeonAccessionMapper
 
   register_for_record_type(Accession)
 
