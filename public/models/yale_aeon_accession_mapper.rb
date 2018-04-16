@@ -2,52 +2,60 @@ class YaleAeonAccessionMapper < AeonAccessionMapper
 
   register_for_record_type(Accession)
 
-  def record_fields
-    mappings = super
-
-    mappings
-  end
-
-  def json_fields
-    mappings = super
-
-    json = self.record.json
-    if !json
-      return mappings
-    end
+  def system_information
+    mapped = super
 
     # ItemInfo2 (url)
-    # required?
+    mapped['ItemInfo2'] = mapped['ReturnLinkURL']
 
     # Site (repo_code)
     # handled by :site in config
 
+    mapped
+  end
+
+
+  def record_fields
+    mapped = super
+
     # ItemTitle (title)
     # done?
 
-    # CallNumber (collection_id)
-    mappings['collection_id'] = [0,1,2,3].map {|n| json["id_#{n}"]}.join(' ')
-    if json.has_key?('user_defined')
-      mappings['collection_id'] += ' ' + json['user_defined']['text_1'] if json['user_defined']['text_1']
+    mapped
+  end
+
+  def json_fields
+    mapped = super
+
+    json = self.record.json
+    if !json
+      return mapped
     end
 
-    # ItemInfo6 (access_restrictions_note)
-    # needs openurl mapping?
+    # CallNumber (collection_id)
+    mapped['collection_id'] = [0,1,2,3].map {|n| json["id_#{n}"]}.join(' ')
+    if json.has_key?('user_defined')
+      mapped['collection_id'] += ' ' + json['user_defined']['text_1'] if json['user_defined']['text_1']
+    end
+
+    # ItemInfo6 (access restriction notes)
+    mapped['ItemInfo6'] = json['access_restrictions_note']
 
     # ItemInfo4 (use_restrictions_note)
-    # needs openurl mapping?
+    mapped['ItemInfo4'] = json['use_restrictions_note']
 
     # ItemDate (dates)
-    # done?
+    # handles in super?
 
     # ItemInfo5 (extents)
-    # needs openurl mapping?
+    mapped['ItemInfo5'] = json['extents'].map {|e| "#{e['number']} #{e['extent_type']}"}.join('; ')
 
     # ItemAuthor (creators)
     # first agent, role='creator'
+    creator = json['linked_agents'].select {|a| a['role'] == 'creator'}.first
+    mapped['ItemAuthor'] = creator['_resolved']['title'] if creator
 
-
-    mappings
+    mapped
   end
 
 end
