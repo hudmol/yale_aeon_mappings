@@ -20,7 +20,7 @@ class YaleAeonAccessionMapper < AeonAccessionMapper
     # required?
 
     # Site (repo_code)
-    # needs openurl mapping?
+    # handled by :site in config
 
     # ItemTitle (title)
     # done?
