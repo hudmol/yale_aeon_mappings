@@ -83,7 +83,12 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # there is an open_url mapping on the aeon side that is blatting this
     # with the value in instance_top_container_long_display_string
     # so below, we blat the blatter!
-    map_request_values(mapped, 'instance_top_container_uri', 'Location') do |v|
+    #
+    # now:
+    # Location (location building)
+    # ItemInfo11 (location uri)
+
+    map_request_values(mapped, 'instance_top_container_uri', 'ItemInfo11') do |v|
       tc = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
                             .map {|i| i['sub_container']['top_container']['_resolved']}
                             .select {|t| t['uri'] == v}.first
@@ -95,9 +100,25 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
         ''
       end
     end
+    map_request_values(mapped, 'instance_top_container_uri', 'Location') do |v|
+      tc = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
+                            .map {|i| i['sub_container']['top_container']['_resolved']}
+                            .select {|t| t['uri'] == v}.first
+
+      if tc
+        loc = tc['container_locations'].select {|l| l['status'] == 'current'}.first
+        if loc
+          self.record.resolved_top_container['container_locations'].select {|cl| cl['ref'] == loc['ref']}
+                                                                   .map {|cl| cl['_resolved']['building']}.first
+        else
+          ''
+        end
+      else
+        ''
+      end
+    end
     # blat the blatter
     map_request_values(mapped, 'Location', 'instance_top_container_long_display_string')
-
 
     mapped
   end
