@@ -6,7 +6,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     mapped = super
 
     # ItemInfo2 (url)
-    mapped['ItemInfo2'] = mapped['ReturnLinkURL']
+    mapped['ItemInfo2'] = mapped['ReturnLinkURL'].gsub(/\/\//, '/')
 
     # Site (repo_code)
     # handled by :site in config
