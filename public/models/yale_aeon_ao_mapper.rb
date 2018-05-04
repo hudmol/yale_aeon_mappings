@@ -21,6 +21,9 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # ItemTitle (title)
     # handled in super?
 
+    # ItemSubTitle (record.request_item.hierarchy)
+    mapped['ItemSubTitle'] = strip_mixed_content(self.record.request_item.hierarchy.join(' / '))
+
     mapped
   end
 
