@@ -35,6 +35,9 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
 
     # These apply to all requests because their data comes from the ao
 
+    # EADNumber (resource.ref)
+    mapped['EADNumber'] = json['resource']['ref']
+
     # ItemCitation (preferred citation note)
     mapped['ItemCitation'] = json['notes'].select {|n| n['type'] == 'prefercite'}
                                           .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}

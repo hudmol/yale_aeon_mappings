@@ -51,6 +51,9 @@ class YaleAeonContainerMapper < AeonRecordMapper
       # CallNumber (collection.identifiers)
       mappings['CallNumber'] = json['collection'].map {|c| c['identifier']}.join(' ;')
 
+      # EADNumber (collection.refs)
+      mappings['EADNumber'] = json['collection'].map {|c| c['ref']}.join(' ;')
+
       # pulling record data from the first series
       if json['series'][0]
         mappings['identifier'] = json['series'][0]['identifier']
