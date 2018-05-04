@@ -78,7 +78,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     map_request_values(mapped, 'instance_top_container_uri', 'ItemInfo10')
 
     # ItemVolume (top_containers type + indicator)
-    map_request_values(mapped, 'instance_top_container_display_string', 'ItemVolume') {|v| v[0, v.index(':')]}
+    map_request_values(mapped, 'instance_top_container_display_string', 'ItemVolume') {|v| v[0, (v.index(':') || v.length)]}
 
     # ReferenceNumber (top_container barcode)
     map_request_values(mapped, 'instance_top_container_barcode', 'ReferenceNumber')
