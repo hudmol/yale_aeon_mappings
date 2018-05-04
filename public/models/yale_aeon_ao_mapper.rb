@@ -67,7 +67,8 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
                          .flatten.uniq.join(' ')
 
     # ItemInfo5 (extents)
-    mapped['ItemInfo5'] = json['extents'].map {|e| "#{e['number']} #{e['extent_type']}"}.join('; ')
+    mapped['ItemInfo5'] = json['extents'].select {|e| !e.has_key?('_inherited')}
+                                         .map {|e| "#{e['number']} #{e['extent_type']}"}.join('; ')
 
 
 
