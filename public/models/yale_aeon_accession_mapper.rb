@@ -35,7 +35,7 @@ class YaleAeonAccessionMapper < AeonAccessionMapper
     # CallNumber (collection_id)
     mapped['collection_id'] = [0,1,2,3].map {|n| json["id_#{n}"]}.join(' ')
     if json.has_key?('user_defined')
-      mapped['collection_id'] += ' ' + json['user_defined']['text_1'] if json['user_defined']['text_1']
+      mapped['collection_id'] += '; ' + json['user_defined']['text_1'] if json['user_defined']['text_1']
     end
 
     # ItemInfo6 (access restriction notes)
