@@ -18,8 +18,8 @@ class YaleAeonAccessionMapper < AeonAccessionMapper
   def record_fields
     mapped = super
 
-    # ItemTitle (title)
-    # done?
+    # ItemDate (record.dates.final_expressions)
+    mapped['ItemDate'] = self.record.dates.map {|d| d['final_expression']}.join(', ')
 
     mapped
   end
@@ -43,9 +43,6 @@ class YaleAeonAccessionMapper < AeonAccessionMapper
 
     # ItemInfo4 (use_restrictions_note)
     mapped['ItemInfo4'] = json['use_restrictions_note']
-
-    # ItemDate (dates)
-    # handles in super?
 
     # ItemInfo5 (extents)
     mapped['ItemInfo5'] = json['extents'].select {|e| !e.has_key?('_inherited')}

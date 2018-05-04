@@ -27,6 +27,9 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # ItemCitation (record.request_item.cite if blank)
     mapped['ItemCitation'] ||= self.record.request_item.cite
 
+    # ItemDate (record.dates.final_expressions)
+    mapped['ItemDate'] = self.record.dates.map {|d| d['final_expression']}.join(', ')
+
     mapped
   end
 
