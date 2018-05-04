@@ -9,6 +9,19 @@ class YaleAeonContainerMapper < AeonRecordMapper
     end
 
 
+  def system_information
+    mapped = super
+
+    # ItemInfo2 (url)
+    mapped['ItemInfo2'] = mapped['ReturnLinkURL']
+
+    # Site (repo_code)
+    # handled by :site in config
+
+    mapped
+  end
+
+
     def record_fields
       mappings = {}
 
