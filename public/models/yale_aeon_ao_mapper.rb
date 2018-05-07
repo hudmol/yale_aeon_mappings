@@ -30,6 +30,8 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # ItemDate (record.dates.final_expressions)
     mapped['ItemDate'] = self.record.dates.map {|d| d['final_expression']}.join(', ')
 
+    StatusUpdater.update('Yale Aeon Last Request', :good, "Mapped: #{mapped['uri']}")
+
     mapped
   end
 
