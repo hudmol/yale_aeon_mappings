@@ -21,6 +21,12 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # ItemTitle (title)
     # handled in super?
 
+    # DocumentType - from settings
+    mapped['DocumentType'] = YaleAeonUtils.doc_type(self.repo_settings, mapped['collection_id'])
+
+    # WebRequestForm - from settings
+    mapped['WebRequestForm'] = YaleAeonUtils.web_request_form(self.repo_settings, mapped['collection_id'])
+
     # ItemSubTitle (record.request_item.hierarchy)
     mapped['ItemSubTitle'] = strip_mixed_content(self.record.request_item.hierarchy.join(' / '))
 

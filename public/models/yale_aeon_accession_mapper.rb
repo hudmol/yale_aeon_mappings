@@ -18,6 +18,12 @@ class YaleAeonAccessionMapper < AeonAccessionMapper
   def record_fields
     mapped = super
 
+    # DocumentType - from settings
+    mapped['DocumentType'] = YaleAeonUtils.doc_type(self.repo_settings, mapped['collection_id'])
+
+    # WebRequestForm - from settings
+    mapped['WebRequestForm'] = YaleAeonUtils.web_request_form(self.repo_settings, mapped['collection_id'])
+
     # ItemDate (record.dates.final_expressions)
     mapped['ItemDate'] = self.record.dates.map {|d| d['final_expression']}.join(', ')
 
