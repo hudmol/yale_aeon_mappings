@@ -5,7 +5,7 @@ An ArchivesSpace plugin containing custom Aeon mappings for Yale University.
 This plugin is used in conjunction with ArchivesSpace Aeon Fulfillment plugin developed by Atlas Systems:
 https://github.com/AtlasSystems/ArchivesSpace-Aeon-Fulfillment-Plugin
 
-It adds custom mappers for ArchivalObjects and Containers.
+It adds custom mappers for ArchivalObjects, Accessions and Containers.
 
 Ensure this plugin loads after the Atlas plugin by placing it later in the array of plugins in config, like this:
 ```
