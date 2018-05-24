@@ -79,6 +79,9 @@ class YaleAeonContainerMapper < AeonRecordMapper
       request["instance_top_container_type_1"] = json['type']
       request["instance_top_container_uri_1"] = json['uri']
 
+      request['ItemVolume_1'] = json['display_string'][0, (json['display_string'].index(':') || json['display_string'].length)]
+      request['ItemInfo10_1'] = json['uri']
+
       collection = json['collection']
       if collection
         request["instance_top_container_collection_identifier_1"] = collection
