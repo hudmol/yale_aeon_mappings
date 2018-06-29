@@ -60,34 +60,30 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
                                           .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
                                           .join(' ')
 
-    # ItemSubTitle (request hierarchy?)
-    # not sure how this should look
-
-    # ItemInfo6 (access restriction notes)
-    mapped['ItemInfo6'] = json['notes'].select {|n| n['type'] == 'accessrestrict'}
-                                       .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
-                                       .join(' ')
-
-    # ItemInfo4 (use_restrictions_note)
-    mapped['ItemInfo4'] = json['notes'].select {|n| n['type'] == 'userestrict'}
-                                       .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
-                                       .join(' ')
-
     # ItemAuthor (creators)
     # first agent, role='creator'
     creator = json['linked_agents'].select {|a| a['role'] == 'creator'}.first
     mapped['ItemAuthor'] = creator['_resolved']['title'] if creator
 
+
+    # ItemInfo5 (access restriction notes)
+    mapped['ItemInfo5'] = json['notes'].select {|n| n['type'] == 'accessrestrict'}
+                                       .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
+                                       .join(' ')
+
+    # ItemInfo6 (use_restrictions_note)
+    mapped['ItemInfo6'] = json['notes'].select {|n| n['type'] == 'userestrict'}
+                                       .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
+                                       .join(' ')
+
+    # ItemInfo7 (extents)
+    mapped['ItemInfo7'] = json['extents'].select {|e| !e.has_key?('_inherited')}
+                                         .map {|e| "#{e['number']} #{e['extent_type']}"}.join('; ')
+
     # ItemInfo8 (access restriction types)
     mapped['ItemInfo8'] = json['notes'].select {|n| n['type'] == 'accessrestrict' && n.has_key?('rights_restriction')}
                          .map {|n| n['rights_restriction']['local_access_restriction_type']}
                          .flatten.uniq.join(' ')
-
-    # ItemInfo5 (extents)
-    mapped['ItemInfo5'] = json['extents'].select {|e| !e.has_key?('_inherited')}
-                                         .map {|e| "#{e['number']} #{e['extent_type']}"}.join('; ')
-
-
 
     # The remainder are per request fields
 

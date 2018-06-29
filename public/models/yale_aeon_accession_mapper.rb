@@ -44,14 +44,14 @@ class YaleAeonAccessionMapper < AeonAccessionMapper
       mapped['collection_id'] += '; ' + json['user_defined']['text_1'] if json['user_defined']['text_1']
     end
 
-    # ItemInfo6 (access restriction notes)
-    mapped['ItemInfo6'] = json['access_restrictions_note']
+    # ItemInfo5 (access restriction notes)
+    mapped['ItemInfo5'] = json['access_restrictions_note']
 
-    # ItemInfo4 (use_restrictions_note)
-    mapped['ItemInfo4'] = json['use_restrictions_note']
+    # ItemInfo6 (use_restrictions_note)
+    mapped['ItemInfo6'] = json['use_restrictions_note']
 
-    # ItemInfo5 (extents)
-    mapped['ItemInfo5'] = json['extents'].select {|e| !e.has_key?('_inherited')}
+    # ItemInfo7 (extents)
+    mapped['ItemInfo7'] = json['extents'].select {|e| !e.has_key?('_inherited')}
                                          .map {|e| "#{e['number']} #{e['extent_type']}"}.join('; ')
 
     # ItemAuthor (creators)

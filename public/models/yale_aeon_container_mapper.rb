@@ -45,8 +45,18 @@ class YaleAeonContainerMapper < AeonRecordMapper
 
       if json['collection'][0]
         mappings['collection_id'] = json['collection'][0]['identifier']
-        mappings['collection_title'] = json['collection'][0]['display_string']
+        mappings['ItemTitle'] = json['collection'][0]['display_string']
       end
+
+      # Trying to get those access notes (mdc)
+      mappings['ItemInfo5'] = json['notes'].select {|n| n['type'] == 'accessrestrict'}
+                                         .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
+                                         .join(' ')
+
+      # ItemInfo8 (access restriction types)
+      mappings['ItemInfo8'] = json['notes'].select {|n| n['type'] == 'accessrestrict'}
+                                          .map {|n| n['rights_restriction']['local_access_restriction_type']}
+                                          .flatten.uniq.join(' ')
 
       # DocumentType - from settings
       mappings['DocumentType'] = YaleAeonUtils.doc_type(self.repo_settings, mappings['collection_id'])
@@ -72,6 +82,8 @@ class YaleAeonContainerMapper < AeonRecordMapper
       mappings['display_string'] = mappings['title']
 
       request = {}
+      # MDC: from a top containr page, only 1 top container can be requested at a time,
+      # so I don't think that the _N business is needed here. nevertheless, I'm keeping things as is for now.
       request['Request'] = '1'
 
       request["instance_top_container_ref_1"] = json['uri']
@@ -81,7 +93,7 @@ class YaleAeonContainerMapper < AeonRecordMapper
       request["instance_top_container_restricted_1"] = json['restricted']
       request["instance_top_container_created_by_1"] = json['created_by']
       request["instance_top_container_indicator_1"] = json['indicator']
-      request["instance_top_container_barcode_1"] = json['barcode']
+      request["ReferenceNumber_1"] = json['barcode']
       request["instance_top_container_type_1"] = json['type']
       request["instance_top_container_uri_1"] = json['uri']
 
