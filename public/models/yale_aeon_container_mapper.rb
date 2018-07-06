@@ -45,7 +45,7 @@ class YaleAeonContainerMapper < AeonRecordMapper
 
       if json['collection'][0]
         mappings['collection_id'] = json['collection'][0]['identifier']
-        mappings['ItemTitle'] = json['collection'][0]['display_string']
+        mappings['collection_title'] = json['collection'][0]['display_string']
       end
 
       # Trying to get those access notes (mdc)
@@ -57,6 +57,9 @@ class YaleAeonContainerMapper < AeonRecordMapper
       mappings['ItemInfo8'] = json['notes'].select {|n| n['type'] == 'accessrestrict'}
                                           .map {|n| n['rights_restriction']['local_access_restriction_type']}
                                           .flatten.uniq.join(' ')
+
+      #if we decide to repeat the title so that it's always in a consistent place.
+      mappings['ItemInfo12'] = mappings['collection_title']
 
       # DocumentType - from settings
       mappings['DocumentType'] = YaleAeonUtils.doc_type(self.repo_settings, mappings['collection_id'])
@@ -78,8 +81,6 @@ class YaleAeonContainerMapper < AeonRecordMapper
         mappings['title'] = strip_mixed_content(json['series'][0]['display_string'])
         mappings['uri'] = json['series'][0]['ref']
       end
-
-      mappings['display_string'] = mappings['title']
 
       request = {}
       # MDC: from a top containr page, only 1 top container can be requested at a time,
@@ -126,6 +127,24 @@ class YaleAeonContainerMapper < AeonRecordMapper
           .join("; ")
       end
 
+      #too much repetition going on here, but keeping this as is for now until we finalize the data mappings (once that's done, we can remove some of the other pieces.)
+      if json['series']
+        collections = json['collection']
+          .select { |c| c['display_string'].present? }
+          .map { |c| c['display_string'] }
+          .join("; ")
+        series = json['series']
+          .select { |c| c['display_string'].present? }
+          .map { |c| c['display_string'] }
+          .join("; ")
+        mappings['ItemTitle'] = collections + ': ' + series
+      else
+        mappings['ItemTitle'] = json['collection']
+          .select { |c| c['display_string'].present? }
+          .map { |c| c['display_string'] }
+          .join("; ")
+      end
+
 
       loc = json['container_locations'].select {|cl| cl['status'] == 'current'}.first
       if (loc)
@@ -134,6 +153,9 @@ class YaleAeonContainerMapper < AeonRecordMapper
         request['instance_top_container_long_display_string_1'] = request['Location_1']
         # ItemInfo11 (location uri)
         request["ItemInfo11"] = loc['ref']
+      else
+        # added this so that we don't wind up with the default Aeon mapping here, which maps the top container long display name to the location.
+        request['instance_top_container_long_display_string_1'] = nil
       end
 
       mappings['requests'] = [request]
