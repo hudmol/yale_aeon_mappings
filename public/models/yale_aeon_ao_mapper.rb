@@ -36,6 +36,9 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # ItemDate (record.dates.final_expressions)
     mapped['ItemDate'] = self.record.dates.map {|d| d['final_expression']}.join(', ')
 
+    # ItemInfo13: including the component unique identifier field
+    mapped['ItemInfo13'] = mapped['component_id']
+
     StatusUpdater.update('Yale Aeon Last Request', :good, "Mapped: #{mapped['uri']}")
 
     mapped
@@ -125,6 +128,11 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
       if tc
         loc = tc['container_locations'].select {|l| l['status'] == 'current'}.first
         if loc
+          # problem: @resolved_top_container only contains the FIRST container.
+          # so right now, if there are multiple locations, then only Location_1 is correct.
+          # the other location values are mapped to the top container URI in place of the Building name
+          # since there are no matches for any location refs aside from the first one.
+          # also tried adding a new method for "top_container_locations", but that failed
           self.record.resolved_top_container['container_locations'].select {|cl| cl['ref'] == loc['ref']}
                                                                    .map {|cl| cl['_resolved']['building']}.first
         else

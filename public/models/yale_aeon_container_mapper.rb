@@ -73,6 +73,10 @@ class YaleAeonContainerMapper < AeonRecordMapper
       # EADNumber (collection.refs)
       mappings['EADNumber'] = json['collection'].map {|c| c['ref']}.join(' ;')
 
+      if json['container_profile'].has_key?('_resolved')
+        mappings['SubLocation'] = json['container_profile']['_resolved']['name']
+      end
+
       # pulling record data from the first series
       if json['series'][0]
         mappings['identifier'] = json['series'][0]['identifier']
@@ -127,7 +131,7 @@ class YaleAeonContainerMapper < AeonRecordMapper
           .join("; ")
       end
 
-      #too much repetition going on here, but keeping this as is for now until we finalize the data mappings (once that's done, we can remove some of the other pieces.)
+      #mdc: too much repetition going on here, but keeping this as is for now until we finalize the data mappings (once that's done, we can remove some of the other pieces.)
       if json['series']
         collections = json['collection']
           .select { |c| c['display_string'].present? }
