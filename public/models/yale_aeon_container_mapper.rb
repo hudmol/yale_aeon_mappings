@@ -73,7 +73,7 @@ class YaleAeonContainerMapper < AeonRecordMapper
       # EADNumber (collection.refs)
       mappings['EADNumber'] = json['collection'].map {|c| c['ref']}.join(' ;')
 
-      if json['container_profile'].has_key?('_resolved')
+      unless json['container_profile'].nil?
         mappings['SubLocation'] = json['container_profile']['_resolved']['name']
       end
 

@@ -142,6 +142,17 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
         ''
       end
     end
+    #mdc: and now we map SubLocations to accomodate previously-instituted mappings for container profiles.
+    map_request_values(mapped, 'instance_top_container_uri', 'SubLocation') do |v|
+      tc = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
+                            .map {|i| i['sub_container']['top_container']['_resolved']}
+                            .select {|t| t['uri'] == v}.first
+      if tc
+        cp = tc.dig('container_profile', '_resolved', 'name')
+      else
+        ''
+      end
+    end
     # blat the blatter
     map_request_values(mapped, 'Location', 'instance_top_container_long_display_string')
 
