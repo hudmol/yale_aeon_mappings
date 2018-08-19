@@ -1,3 +1,5 @@
+require 'pp'
+
 class YaleAeonAOMapper < AeonArchivalObjectMapper
 
   register_for_record_type(ArchivalObject)
@@ -121,20 +123,12 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
       end
     end
     map_request_values(mapped, 'instance_top_container_uri', 'Location') do |v|
-      tc = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
-                            .map {|i| i['sub_container']['top_container']['_resolved']}
-                            .select {|t| t['uri'] == v}.first
+      tc = JSON.parse(self.record.raw['_resolved_top_container_uri_u_sstr'][v].first['json'])
 
       if tc
         loc = tc['container_locations'].select {|l| l['status'] == 'current'}.first
         if loc
-          # problem: @resolved_top_container only contains the FIRST container.
-          # so right now, if there are multiple locations, then only Location_1 is correct.
-          # the other location values are mapped to the top container URI in place of the Building name
-          # since there are no matches for any location refs aside from the first one.
-          # also tried adding a new method for "top_container_locations", but that failed
-          self.record.resolved_top_container['container_locations'].select {|cl| cl['ref'] == loc['ref']}
-                                                                   .map {|cl| cl['_resolved']['building']}.first
+          loc['_resolved']['building']
         else
           ''
         end
