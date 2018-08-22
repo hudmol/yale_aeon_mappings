@@ -21,7 +21,8 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     mapped = super
 
     # ItemTitle (title)
-    # handled in super?
+    # handled in super?  maybe not for bulk requests.
+    mapped['ItemTitle'] = mapped['title']
 
     # DocumentType - from settings
     mapped['DocumentType'] = YaleAeonUtils.doc_type(self.repo_settings, mapped['collection_id'])
@@ -37,6 +38,9 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
 
     # ItemDate (record.dates.final_expressions)
     mapped['ItemDate'] = self.record.dates.map {|d| d['final_expression']}.join(', ')
+
+    # ItemInfo12: duplicating this value to help with reporting
+    mapped['ItemInfo12'] = mapped['collection_title']
 
     # ItemInfo13: including the component unique identifier field
     mapped['ItemInfo13'] = mapped['component_id']
@@ -70,7 +74,6 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     creator = json['linked_agents'].select {|a| a['role'] == 'creator'}.first
     mapped['ItemAuthor'] = creator['_resolved']['title'] if creator
 
-
     # ItemInfo5 (access restriction notes)
     mapped['ItemInfo5'] = json['notes'].select {|n| n['type'] == 'accessrestrict'}
                                        .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
@@ -92,11 +95,35 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
 
     # The remainder are per request fields
 
+    # ItemInfo1 (y/n overview for restrictions; going with the ASpace-defined version of restricted; note, though, that the Aeon plugin didn't need to split these values out for multiple containers.)
+    map_request_values(mapped, 'instance_top_container_restricted', 'ItemInfo1') do |r|
+      r == true ? 'Y' : 'N'
+    end
+
     # ItemInfo10 (top_container uri)
     map_request_values(mapped, 'instance_top_container_uri', 'ItemInfo10')
 
     # ItemVolume (top_containers type + indicator)
     map_request_values(mapped, 'instance_top_container_display_string', 'ItemVolume') {|v| v[0, (v.index(':') || v.length)]}
+
+    #ItemIssue
+    #(instance_top_container_series_identifier + instance_top_container_series_display_string)
+    # also need series_level_display_string ?
+    # check and see if we need to convert the identifiers to roman numerals.  e.g. 1 -> I, but keeping other things as is like "accession 2018 etc"
+    map_request_values(mapped, 'instance_top_container_uri', 'ItemIssue') do |uri|
+      tc = JSON.parse(self.record.raw['_resolved_top_container_uri_u_sstr'][uri].first['json'])
+
+      if tc
+        series_info = []
+        series_info += tc['series'].select {|i| i['identifier'].present? }
+        .map {|i| i['level_display_string'] + ' ' + i['identifier'] + '. ' + i['display_string']}
+
+        series = []
+        series = series_info.join('; ')
+      else
+        ''
+      end
+    end
 
     # ReferenceNumber (top_container barcode)
     map_request_values(mapped, 'instance_top_container_barcode', 'ReferenceNumber')
@@ -109,7 +136,6 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # now:
     # Location (location building)
     # ItemInfo11 (location uri)
-
     map_request_values(mapped, 'instance_top_container_uri', 'ItemInfo11') do |v|
       tc = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
                             .map {|i| i['sub_container']['top_container']['_resolved']}
@@ -136,6 +162,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
         ''
       end
     end
+
     #mdc: and now we map SubLocations to accomodate previously-instituted mappings for container profiles.
     map_request_values(mapped, 'instance_top_container_uri', 'SubLocation') do |v|
       tc = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}

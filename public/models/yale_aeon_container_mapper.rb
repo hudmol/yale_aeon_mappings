@@ -87,7 +87,7 @@ class YaleAeonContainerMapper < AeonRecordMapper
       end
 
       request = {}
-      # MDC: from a top containr page, only 1 top container can be requested at a time,
+      # MDC: from a top container page, only 1 top container can be requested at a time,
       # so I don't think that the _N business is needed here. nevertheless, I'm keeping things as is for now.
       request['Request'] = '1'
 
@@ -101,6 +101,9 @@ class YaleAeonContainerMapper < AeonRecordMapper
       request["ReferenceNumber_1"] = json['barcode']
       request["instance_top_container_type_1"] = json['type']
       request["instance_top_container_uri_1"] = json['uri']
+
+      restricted = json['restricted'] == true ? 'Y' : 'N'
+      request['ItemInfo1_1'] = restricted
 
       request['ItemVolume_1'] = json['display_string'][0, (json['display_string'].index(':') || json['display_string'].length)]
       request['ItemInfo10_1'] = json['uri']
@@ -120,34 +123,20 @@ class YaleAeonContainerMapper < AeonRecordMapper
 
       series = json['series']
       if series
-        request["instance_top_container_series_identifier_1"] = series
-          .select { |s| s['identifier'].present? }
-          .map { |s| s['identifier'] }
-          .join("; ")
+        series_info = []
+        series_info += series.select {|i| i['identifier'].present? }
+        .map {|i| i['level_display_string'] + ' ' + i['identifier'] + '. ' + i['display_string']}
 
-        request["instance_top_container_series_display_string_1"] = series
-          .select { |s| s['display_string'].present? }
-          .map { |s| s['display_string'] }
-          .join("; ")
+        series = []
+        series = series_info.join('; ')
+        request["ItemIssue"] = series
       end
 
-      #mdc: too much repetition going on here, but keeping this as is for now until we finalize the data mappings (once that's done, we can remove some of the other pieces.)
-      if json['series']
-        collections = json['collection']
+
+      mappings['ItemTitle'] = json['collection']
           .select { |c| c['display_string'].present? }
           .map { |c| c['display_string'] }
           .join("; ")
-        series = json['series']
-          .select { |c| c['display_string'].present? }
-          .map { |c| c['display_string'] }
-          .join("; ")
-        mappings['ItemTitle'] = collections + ': ' + series
-      else
-        mappings['ItemTitle'] = json['collection']
-          .select { |c| c['display_string'].present? }
-          .map { |c| c['display_string'] }
-          .join("; ")
-      end
 
 
       loc = json['container_locations'].select {|cl| cl['status'] == 'current'}.first
