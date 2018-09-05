@@ -41,7 +41,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # ItemDate (record.dates.final_expressions)
     mapped['ItemDate'] = self.record.dates.map {|d| d['final_expression']}.join(', ')
 
-    # no longer mapping colleciton title here. we could map the hierarchical info here, but we're not right now. 
+    # no longer mapping collection title here. leaving this as example to show how the hierarchical title was grabbed previously.
     #mapped['ItemInfo12'] = strip_mixed_content(self.record.request_item.hierarchy.join(' / '))
 
     # ItemInfo13: including the component unique identifier field
@@ -106,7 +106,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     map_request_values(mapped, 'instance_top_container_uri', 'ItemInfo10')
 
     # ItemVolume (top_containers type + indicator)
-    # need to add "Box" if missing?
+    # need to add "Box" if missing? we're going to add the data to the source for now. might want to revist that.
     map_request_values(mapped, 'instance_top_container_display_string', 'ItemVolume') {|v| v[0, (v.index(':') || v.length)]}
 
     #ItemIssue
