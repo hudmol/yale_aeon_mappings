@@ -21,8 +21,9 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     mapped = super
 
     # ItemTitle (title)
-    # handled in super?  maybe not for bulk requests.
-    mapped['ItemTitle'] = mapped['title']
+    # handled in super?  maybe not for bulk requests
+    #we're now mapping collection title to ItemTitle. Keep an eye out on that mapping, and also see about updating the Aeon merge feature, since the ItemTitle field is the only field retained in a merge.
+    mapped['ItemTitle'] = mapped['collection_title']
 
     # DocumentType - from settings
     mapped['DocumentType'] = YaleAeonUtils.doc_type(self.repo_settings, mapped['collection_id'])
@@ -31,7 +32,8 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     mapped['WebRequestForm'] = YaleAeonUtils.web_request_form(self.repo_settings, mapped['collection_id'])
 
     # ItemSubTitle (record.request_item.hierarchy)
-    mapped['ItemSubTitle'] = strip_mixed_content(self.record.request_item.hierarchy.join(' / '))
+    #mapped['ItemSubTitle'] = strip_mixed_content(self.record.request_item.hierarchy.join(' / '))
+    mapped['ItemSubTitle'] = mapped['title']
 
     # ItemCitation (record.request_item.cite if blank)
     mapped['ItemCitation'] ||= self.record.request_item.cite
@@ -39,8 +41,8 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # ItemDate (record.dates.final_expressions)
     mapped['ItemDate'] = self.record.dates.map {|d| d['final_expression']}.join(', ')
 
-    # ItemInfo12: duplicating this value to help with reporting
-    mapped['ItemInfo12'] = mapped['collection_title']
+    # no longer mapping colleciton title here. we could map the hierarchical info here, but we're not right now. 
+    #mapped['ItemInfo12'] = strip_mixed_content(self.record.request_item.hierarchy.join(' / '))
 
     # ItemInfo13: including the component unique identifier field
     mapped['ItemInfo13'] = mapped['component_id']
@@ -104,6 +106,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     map_request_values(mapped, 'instance_top_container_uri', 'ItemInfo10')
 
     # ItemVolume (top_containers type + indicator)
+    # need to add "Box" if missing?
     map_request_values(mapped, 'instance_top_container_display_string', 'ItemVolume') {|v| v[0, (v.index(':') || v.length)]}
 
     #ItemIssue
