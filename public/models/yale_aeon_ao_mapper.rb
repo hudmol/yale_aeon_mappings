@@ -19,7 +19,9 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     mapped = super
 
     # ItemTitle (title)
-    # handled in super?
+    # handled in super?  maybe not for bulk requests
+    #we're now mapping collection title to ItemTitle. Keep an eye out on that mapping, and also see about updating the Aeon merge feature, since the ItemTitle field is the only field retained in a merge.
+    mapped['ItemTitle'] = mapped['collection_title']
 
     # DocumentType - from settings
     mapped['DocumentType'] = YaleAeonUtils.doc_type(self.repo_settings, mapped['collection_id'])
@@ -28,13 +30,20 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     mapped['WebRequestForm'] = YaleAeonUtils.web_request_form(self.repo_settings, mapped['collection_id'])
 
     # ItemSubTitle (record.request_item.hierarchy)
-    mapped['ItemSubTitle'] = strip_mixed_content(self.record.request_item.hierarchy.join(' / '))
+    #mapped['ItemSubTitle'] = strip_mixed_content(self.record.request_item.hierarchy.join(' / '))
+    mapped['ItemSubTitle'] = mapped['title']
 
     # ItemCitation (record.request_item.cite if blank)
     mapped['ItemCitation'] ||= self.record.request_item.cite
 
     # ItemDate (record.dates.final_expressions)
     mapped['ItemDate'] = self.record.dates.map {|d| d['final_expression']}.join(', ')
+
+    # no longer mapping collection title here. leaving this as example to show how the hierarchical title was grabbed previously.
+    #mapped['ItemInfo12'] = strip_mixed_content(self.record.request_item.hierarchy.join(' / '))
+
+    # ItemInfo13: including the component unique identifier field
+    mapped['ItemInfo13'] = mapped['component_id']
 
     # Append external_ids with source = 'local_surrogate_call_number' to 'collection_id'
     self.record.json['external_ids'].select{|ei| ei['source'] == 'local_surrogate_call_number'}.map do |ei|
@@ -65,42 +74,62 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
                                           .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
                                           .join(' ')
 
-    # ItemSubTitle (request hierarchy?)
-    # not sure how this should look
-
-    # ItemInfo6 (access restriction notes)
-    mapped['ItemInfo6'] = json['notes'].select {|n| n['type'] == 'accessrestrict'}
-                                       .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
-                                       .join(' ')
-
-    # ItemInfo4 (use_restrictions_note)
-    mapped['ItemInfo4'] = json['notes'].select {|n| n['type'] == 'userestrict'}
-                                       .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
-                                       .join(' ')
-
     # ItemAuthor (creators)
     # first agent, role='creator'
     creator = json['linked_agents'].select {|a| a['role'] == 'creator'}.first
     mapped['ItemAuthor'] = creator['_resolved']['title'] if creator
+
+    # ItemInfo5 (access restriction notes)
+    mapped['ItemInfo5'] = json['notes'].select {|n| n['type'] == 'accessrestrict'}
+                                       .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
+                                       .join(' ')
+
+    # ItemInfo6 (use_restrictions_note)
+    mapped['ItemInfo6'] = json['notes'].select {|n| n['type'] == 'userestrict'}
+                                       .map {|n| n['subnotes'].map {|s| s['content']}.join(' ')}
+                                       .join(' ')
+
+    # ItemInfo7 (extents)
+    mapped['ItemInfo7'] = json['extents'].select {|e| !e.has_key?('_inherited')}
+                                         .map {|e| "#{e['number']} #{e['extent_type']}"}.join('; ')
 
     # ItemInfo8 (access restriction types)
     mapped['ItemInfo8'] = json['notes'].select {|n| n['type'] == 'accessrestrict' && n.has_key?('rights_restriction')}
                          .map {|n| n['rights_restriction']['local_access_restriction_type']}
                          .flatten.uniq.join(' ')
 
-    # ItemInfo5 (extents)
-    mapped['ItemInfo5'] = json['extents'].select {|e| !e.has_key?('_inherited')}
-                                         .map {|e| "#{e['number']} #{e['extent_type']}"}.join('; ')
-
-
-
     # The remainder are per request fields
+
+    # ItemInfo1 (y/n overview for restrictions; going with the ASpace-defined version of restricted; note, though, that the Aeon plugin didn't need to split these values out for multiple containers.)
+    map_request_values(mapped, 'instance_top_container_restricted', 'ItemInfo1') do |r|
+      r == true ? 'Y' : 'N'
+    end
 
     # ItemInfo10 (top_container uri)
     map_request_values(mapped, 'instance_top_container_uri', 'ItemInfo10')
 
     # ItemVolume (top_containers type + indicator)
+    # need to add "Box" if missing? we're going to add the data to the source for now. might want to revist that.
     map_request_values(mapped, 'instance_top_container_display_string', 'ItemVolume') {|v| v[0, (v.index(':') || v.length)]}
+
+    #ItemIssue
+    #(instance_top_container_series_identifier + instance_top_container_series_display_string)
+    # also need series_level_display_string ?
+    # check and see if we need to convert the identifiers to roman numerals.  e.g. 1 -> I, but keeping other things as is like "accession 2018 etc"
+    map_request_values(mapped, 'instance_top_container_uri', 'ItemIssue') do |uri|
+      tc = JSON.parse(self.record.raw['_resolved_top_container_uri_u_sstr'][uri].first['json'])
+
+      if tc
+        series_info = []
+        series_info += tc['series'].select {|i| i['identifier'].present? }
+        .map {|i| i['level_display_string'] + ' ' + i['identifier'] + '. ' + i['display_string']}
+
+        series = []
+        series = series_info.join('; ')
+      else
+        ''
+      end
+    end
 
     # ReferenceNumber (top_container barcode)
     map_request_values(mapped, 'instance_top_container_barcode', 'ReferenceNumber')
@@ -113,7 +142,6 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # now:
     # Location (location building)
     # ItemInfo11 (location uri)
-
     map_request_values(mapped, 'instance_top_container_uri', 'ItemInfo11') do |v|
       tc = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
                             .map {|i| i['sub_container']['top_container']['_resolved']}
@@ -140,6 +168,19 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
         ''
       end
     end
+
+    #mdc: and now we map SubLocations to accomodate previously-instituted mappings for container profiles.
+    map_request_values(mapped, 'instance_top_container_uri', 'SubLocation') do |v|
+      tc = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
+                            .map {|i| i['sub_container']['top_container']['_resolved']}
+                            .select {|t| t['uri'] == v}.first
+      if tc
+        cp = tc.dig('container_profile', '_resolved', 'name') || ''
+      else
+        ''
+      end
+    end
+
     # blat the blatter
     map_request_values(mapped, 'Location', 'instance_top_container_long_display_string')
 
