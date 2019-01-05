@@ -1,5 +1,3 @@
-require 'pp'
-
 class YaleAeonAOMapper < AeonArchivalObjectMapper
 
   register_for_record_type(ArchivalObject)
@@ -46,6 +44,11 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
 
     # ItemInfo13: including the component unique identifier field
     mapped['ItemInfo13'] = mapped['component_id']
+
+    # Append external_ids with source = 'local_surrogate_call_number' to 'collection_id'
+    self.record.json['external_ids'].select{|ei| ei['source'] == 'local_surrogate_call_number'}.map do |ei|
+      mapped['collection_id'] += '; ' + ei['external_id']
+    end
 
     StatusUpdater.update('Yale Aeon Last Request', :good, "Mapped: #{mapped['uri']}")
 
