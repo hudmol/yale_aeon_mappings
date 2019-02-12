@@ -140,7 +140,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # so below, we blat the blatter!
     #
     # now:
-    # Location (location building)
+    # Location
     # ItemInfo11 (location uri)
     map_request_values(mapped, 'instance_top_container_uri', 'ItemInfo11') do |v|
       tc = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
@@ -160,7 +160,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
       if tc
         loc = tc['container_locations'].select {|l| l['status'] == 'current'}.first
         if loc
-          loc['_resolved']['building']
+          loc['_resolved']['title']
         else
           ''
         end
