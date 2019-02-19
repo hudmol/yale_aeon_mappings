@@ -160,7 +160,11 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
       if tc
         loc = tc['container_locations'].select {|l| l['status'] == 'current'}.first
         if loc
+<<<<<<< HEAD
           loc['_resolved']['title']
+=======
+          loc['_resolved']['building']
+>>>>>>> hudmol/master
         else
           ''
         end
