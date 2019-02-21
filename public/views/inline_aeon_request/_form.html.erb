@@ -1,20 +1,15 @@
 <div>
 
-  <h3><%= resource['title'] %></h3>
+  <h3><%= resource['title'] %> (<%= (0..3).map{|n| resource["id_#{n}"]}.compact.join('-') %>)</h3>
 
-  <div class="badge-and-indentifier">
-    <div class="identifier" style="float:none;">
-      <span class="id-label"> Identifier: </span>
-      &nbsp;
-      <span class="component"> <%= (0..3).map{|n| resource["id_#{n}"]}.compact.join('-') %> </span>
-    </div>
-  </div>
-
+  <h4>
+    <%= series %>
+  </h4>
 
   <div style="margin-top:10px;">
     <ul>
       <% containers.each do |container| %>
-        <li><%= container['title'] %></li>
+        <li><strong><%= container['title'] %></strong></li>
       <% end %>
     </ul>
   </div>
