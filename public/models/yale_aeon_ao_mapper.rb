@@ -160,7 +160,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
       if tc
         loc = tc['container_locations'].select {|l| l['status'] == 'current'}.first
         if loc
-          loc['_resolved']['building']
+          loc['_resolved']['title']
         else
           ''
         end
