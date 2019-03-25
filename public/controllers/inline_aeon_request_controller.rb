@@ -7,16 +7,13 @@ class InlineAeonRequestController <  ApplicationController
 
     ao = archivesspace.get_record(uri, args)
 
-    series =
-      if ao.resolved_top_container['series'].any?
-        ao.resolved_top_container['series'].select{|s| ao.json['ancestors'].map{|a| a['ref']}.include?(s['ref'])}.first['display_string']
-      else
-        ''
-      end
+    series = ao.resolved_top_container['series']
+               .select{|s| ao.json['ancestors'].map{|a| a['ref']}.include?(s['ref'])}
+               .first
 
     render :partial => 'inline_aeon_request/form',
            :locals => {:record => ao,
-                       :series => series,
+                       :series => series ? series['display_string'] : false,
                        :resource => ao.resolved_resource,
                        :containers => ao.container_titles_and_uris}
   end

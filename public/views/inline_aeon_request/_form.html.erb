@@ -2,9 +2,9 @@
 
   <h3><%= resource['title'] %> (<%= (0..3).map{|n| resource["id_#{n}"]}.compact.join('-') %>)</h3>
 
-  <h4>
-    <%= series %>
-  </h4>
+  <% if series %>
+    <h4><%= series %></h4>
+  <% end %>
 
   <div style="margin-top:10px;">
     <ul>
