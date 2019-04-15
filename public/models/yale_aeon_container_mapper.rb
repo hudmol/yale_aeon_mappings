@@ -141,8 +141,8 @@ class YaleAeonContainerMapper < AeonRecordMapper
 
       loc = json['container_locations'].select {|cl| cl['status'] == 'current'}.first
       if (loc)
-        # Location (full location title)
-        request["Location_1"] = loc['_resolved']['title']
+        # Location (location building)
+        request["Location_1"] = loc['_resolved']['building']
         request['instance_top_container_long_display_string_1'] = request['Location_1']
         # ItemInfo11 (location uri)
         request["ItemInfo11"] = loc['ref']
