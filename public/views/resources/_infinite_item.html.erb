@@ -19,14 +19,6 @@
      data-uri="<%= @result.uri %>"
 >
 
-<%# PLUGIN CONTENT START %>
-  <% if @result.is_a?(ArchivalObject) && @result.respond_to?(:container_titles_and_uris) && !@result.container_titles_and_uris.empty? %>
-    <div class="pull-right">
-      <%= render partial: 'inline_request_button', :locals => {:record => @result} %>
-    </div>
-  <% end %>
-<%# PLUGIN CONTENT END   %>
-
   <nav class="context" style="display: none" aria-hidden="true">
     <ul>
       <% if @result.is_a?(ArchivalObject) %>
@@ -43,10 +35,23 @@
     </ul>
   </nav>
 
-  <div class="information" style="overflow: hidden;">
-      <h3 id="<%= labelledby %>">
-        <a class="record-title" href="<%= app_prefix(@result.uri) %>">  <%== @result.display_string %></a>
-      </h3>
+  <div class="information">
+    <div class="row">
+      <div class="col-sm-9">
+        <h3 id="<%= labelledby %>">
+          <a class="record-title" href="<%= app_prefix(@result.uri) %>">  <%== @result.display_string %></a>
+        </h3>
+      </div>
+
+      <div class="col-sm-3">
+        <%# PLUGIN CONTENT START %>
+        <% if @result.is_a?(ArchivalObject) && @result.respond_to?(:container_titles_and_uris) && !@result.container_titles_and_uris.empty? %>
+          <div>
+            <%= render partial: 'inline_request_button', :locals => {:record => @result} %>
+          </div>
+        <% end %>
+        <%# PLUGIN CONTENT END   %>
+      </div>
   </div>
 
   <div class="record-type-badge">
