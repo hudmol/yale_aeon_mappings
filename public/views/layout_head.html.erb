@@ -1,22 +1,22 @@
-<%= javascript_include_tag 'inline_request_form' %>
-
-<%# There's no hook to add something to the end of the body, so we'll add it here by hook and/or crook. %>
-<script type="text/template" id="inline_request_modal_template">
- <% inline_request_modal_body = render partial: 'inline_request_modal' %>
- <%= render(partial: 'shared/modal',
-            locals: {:modal_id => 'inline_request_modal', :title => t('actions.request'),
-                     :modal_body => inline_request_modal_body }) %>
-</script>
-
-<script>
- $(function () {
-     $('body').append($('#inline_request_modal_template').html());
- });
-</script>
-
 <% if controller_name == 'resources' && action_name == 'infinite' %>
-    <%# Apply request buttons as things are shown %>
-    <script>
+  <%= javascript_include_tag 'inline_request_form' %>
+
+  <%# There's no hook to add something to the end of the body, so we'll add it here by hook and/or crook. %>
+  <script type="text/template" id="inline_request_modal_template">
+   <% inline_request_modal_body = render partial: 'inline_request_modal' %>
+   <%= render(partial: 'shared/modal',
+              locals: {:modal_id => 'inline_request_modal', :title => t('actions.request'),
+                       :modal_body => inline_request_modal_body }) %>
+  </script>
+
+  <script>
+   $(function () {
+       $('body').append($('#inline_request_modal_template').html());
+   });
+  </script>
+
+  <%# Apply request buttons as things are shown %>
+  <script>
      apply_request_buttons_to_infinite();
-    </script>
+  </script>
 <% end %>
