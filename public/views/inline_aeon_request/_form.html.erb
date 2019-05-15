@@ -9,7 +9,7 @@
   <div style="margin-top:10px;">
     <ul>
       <% containers.each do |container| %>
-        <li><strong><%= container['title'] %></strong></li>
+        <li><strong><%= container['title'].split(',')[0] %></strong></li>
       <% end %>
     </ul>
   </div>
