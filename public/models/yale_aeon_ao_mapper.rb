@@ -112,6 +112,27 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # need to add "Box" if missing? we're going to add the data to the source for now. might want to revist that.
     map_request_values(mapped, 'instance_top_container_display_string', 'ItemVolume') {|v| v[0, (v.index(':') || v.length)]}
 
+    # new for folders (only right now).... concat 2 fields.... clean this up.  there's a much better way to do this.
+    map_request_values(mapped, 'instance_container_child_indicator', 'ItemEdition') do |v|
+      valid_types = ['Folder', 'folder']
+      folder = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
+                            .map {|i| i['sub_container']}.select {|i| valid_types.include?(i['type_2'])}
+                            .map {|i| i['type_2'] << ':::' << i['indicator_2']}
+      folder ? folder : ''
+    end
+
+    # lame to do this a second time, but it works now that i've changed the strings above...
+    # and here, we just take those types that start with "folder:::", and pass on the indicator that's after the "folder:::" bit.
+    map_request_values(mapped, 'instance_container_child_type', 'ItemEdition') do |v|
+      unless v.nil?
+        if v.downcase.include? 'folder:::'
+          v.downcase.sub(/folder:::/, '')
+        else
+          ''
+        end
+      end
+    end
+
     #ItemIssue
     #(instance_top_container_series_identifier + instance_top_container_series_display_string)
     # also need series_level_display_string ?
