@@ -4,6 +4,7 @@ $(function() {
 	modal = $('#inline_request_modal');
 	send_btn = modal.find('.action-btn');
 	send_btn.html('Send Request');
+	send_btn.attr('disabled', true);
 
 	send_btn.click(function(e) {
 	    modal.find('.page_action, .request').click();
@@ -21,8 +22,8 @@ $(function() {
 	}).done(function(form) {
 	    request_form = $('#inline-aeon-request-form');
 	    request_form.html(form);
-	    if (request_form.find('.page_action, .request').attr('disabled')) {
-	        $('#inline_request_modal').find('.action-btn').attr('disabled', true);
+	    if (!request_form.find('.page_action, .request').attr('disabled')) {
+	        $('#inline_request_modal').find('.action-btn').attr('disabled', false);
 	    }
 	    request_form.find('.page_action, .request').hide();
 	}).fail(function() {
