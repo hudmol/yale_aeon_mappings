@@ -5,8 +5,9 @@ class YaleAeonAccessionMapper < AeonAccessionMapper
   def system_information
     mapped = super
 
-    # ItemInfo2 (url)
-    mapped['ItemInfo2'] = mapped['ReturnLinkURL']
+    # Should ask that AUG update the Aeon database at the time this mapping goes into place.
+    # If so, they'd just need to move over data from ItemInfo2 to EADNumber for the ArchivesSpace requests up until that date.
+    mapped['EADNumber'] = mapped['ReturnLinkURL']
 
     # Site (repo_code)
     # handled by :site in config

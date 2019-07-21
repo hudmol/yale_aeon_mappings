@@ -5,8 +5,9 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
   def system_information
     mapped = super
 
-    # ItemInfo2 (url)
-    mapped['ItemInfo2'] = mapped['ReturnLinkURL']
+    # Should ask that AUG update the Aeon database at the time this mapping goes into place.
+    # If so, they'd just need to move over data from ItemInfo2 to EADNumber for the ArchivesSpace requests up until that date.
+    mapped['EADNumber'] = mapped['ReturnLinkURL']
 
     # Site (repo_code)
     # handled by :site in config
@@ -66,8 +67,8 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
 
     # These apply to all requests because their data comes from the ao
 
-    # EADNumber (resource.ref)
-    mapped['EADNumber'] = json['resource']['ref']
+    # ItemInfo14 (previously EADNumber) (resource.ref)
+    mapped['ItemInfo14'] = json['resource']['ref']
 
     # ItemCitation (preferred citation note)
     mapped['ItemCitation'] = json['notes'].select {|n| n['type'] == 'prefercite'}
@@ -120,7 +121,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
                             .map {|i| i['type_2'] << ':::' << i['indicator_2']}
       folder ? folder : ''
     end
-    
+
     # lame to do this a second time, but it works now that i've changed the strings above...
     # and here, we just take those types that start with "folder:::", and pass on the indicator that's after the "folder:::" bit.
     map_request_values(mapped, 'instance_container_child_type', 'ItemEdition') do |v|
