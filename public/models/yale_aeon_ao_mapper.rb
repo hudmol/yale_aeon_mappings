@@ -5,8 +5,9 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
   def system_information
     mapped = super
 
-    # ItemInfo2 (url)
-    mapped['ItemInfo2'] = mapped['ReturnLinkURL']
+    # Should ask that AUG update the Aeon database at the time this mapping goes into place.
+    # If so, they'd just need to move over data from ItemInfo2 to EADNumber for the ArchivesSpace requests up until that date.
+    mapped['EADNumber'] = mapped['ReturnLinkURL']
 
     # Site (repo_code)
     # handled by :site in config
@@ -66,8 +67,8 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
 
     # These apply to all requests because their data comes from the ao
 
-    # EADNumber (resource.ref)
-    mapped['EADNumber'] = json['resource']['ref']
+    # ItemInfo14 (previously EADNumber) (resource.ref)
+    mapped['ItemInfo14'] = json['resource']['ref']
 
     # ItemCitation (preferred citation note)
     mapped['ItemCitation'] = json['notes'].select {|n| n['type'] == 'prefercite'}

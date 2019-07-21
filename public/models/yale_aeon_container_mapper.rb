@@ -70,8 +70,8 @@ class YaleAeonContainerMapper < AeonRecordMapper
       # CallNumber (collection.identifiers)
       mappings['CallNumber'] = json['collection'].map {|c| c['identifier']}.join(' ;')
 
-      # EADNumber (collection.refs)
-      mappings['EADNumber'] = json['collection'].map {|c| c['ref']}.join(' ;')
+      # ItemInfo14 (previously EADNumber) (collection.refs)
+      mappings['ItemInfo14'] = json['collection'].map {|c| c['ref']}.join('; ')
 
       unless json['container_profile'].nil?
         mappings['SubLocation'] = json['container_profile']['_resolved']['name']
