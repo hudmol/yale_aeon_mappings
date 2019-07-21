@@ -182,7 +182,9 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
       if tc
         loc = tc['container_locations'].select {|l| l['status'] == 'current'}.first
         if loc
-          loc['_resolved']['title']
+          # until we create an ASpace plugin to control how the location title is constructed, we're going to remove any 5-digit location barcodes
+          # using the sub method below.
+          loc['_resolved']['title'].sub(/\[\d{5}, /, '[')
         else
           ''
         end

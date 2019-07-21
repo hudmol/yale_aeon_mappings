@@ -12,8 +12,9 @@ class YaleAeonContainerMapper < AeonRecordMapper
   def system_information
     mapped = super
 
-    # ItemInfo2 (url)
-    mapped['ItemInfo2'] = mapped['ReturnLinkURL']
+    # Should ask that AUG update the Aeon database at the time this mapping goes into place.
+    # If so, they'd just need to move over data from ItemInfo2 to EADNumber for the ArchivesSpace requests up until that date.
+    mapped['EADNumber'] = mapped['ReturnLinkURL']
 
     # Site (repo_code)
     # handled by :site in config
@@ -141,8 +142,10 @@ class YaleAeonContainerMapper < AeonRecordMapper
 
       loc = json['container_locations'].select {|cl| cl['status'] == 'current'}.first
       if (loc)
-        # Location (full location title)
-        request["Location_1"] = loc['_resolved']['title']
+        # Location
+        # until we create an ASpace plugin to control how the location title is constructed, we're going to remove any 5-digit location barcodes
+        # using the sub method below.
+        request["Location_1"] = loc['_resolved']['title'].sub(/\[\d{5}, /, '[')
         request['instance_top_container_long_display_string_1'] = request['Location_1']
         # ItemInfo11 (location uri)
         request["ItemInfo11"] = loc['ref']
