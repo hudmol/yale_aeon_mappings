@@ -113,24 +113,37 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     # need to add "Box" if missing? we're going to add the data to the source for now. might want to revist that.
     map_request_values(mapped, 'instance_top_container_display_string', 'ItemVolume') {|v| v[0, (v.index(':') || v.length)]}
 
-    # new for folders (only right now).... concat 2 fields.... clean this up.  there's a much better way to do this.
-    map_request_values(mapped, 'instance_container_child_indicator', 'ItemEdition') do |v|
+    # update:  now we're mapping folders whether they occur as a child or a grandchild.  if both, they'll be combined with a semi-colon.
+    # shouldn't need flatten and uniq at all, just in case there are multiple instances (e.g. b1, f1; b1; f1, then we don't need to have 1; 1 when 1 would do, right?)
+    map_request_values(mapped, 'instance_top_container_uri', 'ItemEdition') do |uri|
       valid_types = ['Folder', 'folder']
-      folder = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
-                            .map {|i| i['sub_container']}.select {|i| valid_types.include?(i['type_2'])}
-                            .map {|i| i['type_2'] << ':::' << i['indicator_2']}
-      folder ? folder : ''
+      sub = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
+        .select {|i| i['sub_container']['top_container']['ref'] == uri}
+        .map{|i| i['sub_container']}
+      if sub
+        folders = sub.select {|i| valid_types.include?(i['type_2'])}
+                .map {|i| i['indicator_2']}
+        folders += sub.select {|i| valid_types.include?(i['type_3'])}
+                .map {|i| i['indicator_3']}
+        folders = folders.flatten.uniq.join('; ')
+      else
+        ''
+      end
     end
 
-    # lame to do this a second time, but it works now that i've changed the strings above...
-    # and here, we just take those types that start with "folder:::", and pass on the indicator that's after the "folder:::" bit.
-    map_request_values(mapped, 'instance_container_child_type', 'ItemEdition') do |v|
-      unless v.nil?
-        if v.downcase.include? 'folder:::'
-          v.downcase.sub(/folder:::/, '')
-        else
-          ''
-        end
+    # and here we're mapping those hacky item_barcodes to Aeon.
+    map_request_values(mapped, 'instance_top_container_uri', 'ItemISxN') do |uri|
+      sub = json['instances'].select {|i| i.has_key?('sub_container') && i['sub_container'].has_key?('top_container')}
+        .select {|i| i['sub_container']['top_container']['ref'] == uri}
+        .map{|i| i['sub_container']}
+      if sub
+        ibs = sub.select {|i| i['type_2'] == 'item_barcode'}
+                .map {|i| i['indicator_2']}
+        ibs += sub.select {|i| i['type_3'] == 'item_barcode'}
+                .map {|i| i['indicator_3']}
+        ibs = ibs.flatten.uniq.join('; ')
+      else
+        ''
       end
     end
 
