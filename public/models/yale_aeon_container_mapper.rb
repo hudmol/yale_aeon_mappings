@@ -69,7 +69,7 @@ class YaleAeonContainerMapper < AeonRecordMapper
       mappings['WebRequestForm'] = YaleAeonUtils.web_request_form(self.repo_settings, mappings['collection_id'])
 
       # CallNumber (collection.identifiers)
-      mappings['CallNumber'] = json['collection'].map {|c| c['identifier']}.join(' ;')
+      mappings['CallNumber'] = json['collection'].map {|c| c['identifier']}.join('; ')
 
       # ItemInfo14 (previously EADNumber) (collection.refs)
       mappings['ItemInfo14'] = json['collection'].map {|c| c['ref']}.join('; ')

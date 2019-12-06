@@ -1,0 +1,21 @@
+<div>
+
+  <h3><%= resource['title'] %> (<%= (0..3).map{|n| resource["id_#{n}"]}.compact.join('-') %>)</h3>
+
+  <% if series %>
+    <h4><%= series %></h4>
+  <% end %>
+
+  <div style="margin-top:10px;">
+    <ul>
+      <% containers.each do |container| %>
+        <li><strong><%= container['title'].split(',')[0] %></strong></li>
+      <% end %>
+    </ul>
+  </div>
+
+  <div class="pull-right">
+    <%= render :partial => 'aeon/aeon_request_action', :locals => {:record => record} %>
+  </div>
+
+</div>
