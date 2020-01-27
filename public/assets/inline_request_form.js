@@ -6,7 +6,7 @@ $(function() {
 	send_btn.html('Send Request');
 	send_btn.attr('disabled', true);
 
-	send_btn.click(function(e) {
+	send_btn.unbind('click').click(function(e) {
 	    modal.find('.page_action, .request').click();
  	    modal.modal('hide');
 	});
