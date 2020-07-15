@@ -1,5 +1,6 @@
 en:
   plugins:
     aeon_fulfillment:
+      request_button_label: Request
       requesting_disabled: |
         Requesting not available at this level. Use <strong>Navigate the Collection</strong> to select an item to request.
