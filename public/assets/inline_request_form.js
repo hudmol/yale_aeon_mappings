@@ -14,7 +14,7 @@ $(function() {
 	$('#inline-aeon-request-form').html('Retrieving request information ...');
 	modal.modal('show');
 
-	$.ajax("/plugin/inline_aeon_request_form", {
+	$.ajax("/plugin/yale_aeon_mappings/inline_aeon_request_form", {
 	    data: {
 		uri: uri
 	    },
