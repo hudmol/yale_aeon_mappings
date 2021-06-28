@@ -99,6 +99,11 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
                          .map {|n| n['rights_restriction']['local_access_restriction_type']}
                          .flatten.uniq.join(' ')
 
+    # ItemInfo15 (active restrictions)
+    # FIXME: might need to go in another field
+    # FIXME: should only be included for photodup requests
+    mapped['ItemInfo15'] = YaleAeonUtils.active_restrictions(json['active_restrictions'])
+
     # The remainder are per request fields
 
     # ItemInfo1 (y/n overview for restrictions; going with the ASpace-defined version of restricted; note, though, that the Aeon plugin didn't need to split these values out for multiple containers.)
