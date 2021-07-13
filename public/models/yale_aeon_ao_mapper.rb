@@ -238,4 +238,57 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     end
   end
 
+  def map(request_type = 'reading_room')
+    if request_type == 'reading_room'
+      super
+    elsif request_type == 'digitization'
+      # HACK: It turns out we want to map to different forms within Aeon, so really we
+      # want one mapping per (ASpaceRecordType, AeonForm).  Currently we only have one
+      # mapper per ASpaceRecordType, so we're going to force it to do double duty with
+      # this ugly if statement.
+
+      resource = archivesspace.get_record(self.record.resolved_resource.fetch('uri'))
+      ao = archivesspace.get_record(self.record.json.fetch('uri'))
+
+      ao_series_ref = (ao.json.fetch('ancestors').find {|ancestor| ancestor.fetch('level') == 'series'} || {}).fetch('ref', nil)
+
+      ao_series = if ao_series_ref
+                    archivesspace.get_record(ao_series_ref)
+                  end
+
+      result = {}.merge(self.system_information)
+
+      result['CallNumber'] = resource.four_part_identifier.compact.join('-')
+
+      if ao_series
+        result['ItemIssue'] = ao_series.display_string
+      end
+
+      first_instance = ao.json.fetch('instances', []).find {|instance|
+        instance.fetch('instance_type') != 'digital_object'
+      }
+
+      result['ItemVolume'] = first_instance.dig('sub_container', 'top_container', '_resolved', 'display_string')
+
+      sub_container = first_instance.fetch('sub_container')
+      folders = []
+
+      folders << sub_container['indicator_2'] if sub_container['type_2'] == 'folder'
+      folders << sub_container['indicator_3'] if sub_container['type_3'] == 'folder'
+
+      result['ItemEdition'] = folders.join('; ')
+
+      result['ItemTitle'] = ao.display_string
+
+      creator = ao.json['linked_agents'].select {|a| a['role'] == 'creator'}.first
+      mapped['ItemAuthor'] = creator['_resolved']['title'] if creator
+
+      result
+    else
+      raise "Unknown request type: #{request_type}"
+    end
+  end
+
 end
+
+
