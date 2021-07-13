@@ -238,6 +238,15 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     end
   end
 
+  # Hyphens seem to cause certain fields to be blanked on the Aeon side.
+  def clean_for_aeon(s)
+    if s
+      s.gsub(/-/, ' ')
+    else
+      s
+    end
+  end
+
   def map(request_type = 'reading_room')
     if request_type == 'reading_room'
       super
@@ -261,14 +270,14 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
       result['CallNumber'] = resource.four_part_identifier.compact.join('-')
 
       if ao_series
-        result['ItemIssue'] = ao_series.display_string
+        result['ItemIssue'] = clean_for_aeon(ao_series.display_string)
       end
 
       first_instance = ao.json.fetch('instances', []).find {|instance|
         instance.fetch('instance_type') != 'digital_object'
       }
 
-      result['ItemVolume'] = first_instance.dig('sub_container', 'top_container', '_resolved', 'display_string')
+      result['ItemVolume'] = clean_for_aeon(first_instance.dig('sub_container', 'top_container', '_resolved', 'display_string'))
 
       sub_container = first_instance.fetch('sub_container')
       folders = []
@@ -276,9 +285,9 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
       folders << sub_container['indicator_2'] if sub_container['type_2'] == 'folder'
       folders << sub_container['indicator_3'] if sub_container['type_3'] == 'folder'
 
-      result['ItemEdition'] = folders.join('; ')
+      result['ItemEdition'] = clean_for_aeon(folders.join('; '))
 
-      result['ItemTitle'] = ao.display_string
+      result['ItemTitle'] = clean_for_aeon(ao.display_string)
 
       creator = ao.json['linked_agents'].select {|a| a['role'] == 'creator'}.first
       mapped['ItemAuthor'] = creator['_resolved']['title'] if creator
