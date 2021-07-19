@@ -247,7 +247,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
     end
   end
 
-  def map(request_type = 'reading_room')
+  def map
     if request_type == 'reading_room'
       super
     elsif request_type == 'digitization'
@@ -290,7 +290,7 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
       result['ItemTitle'] = clean_for_aeon(ao.display_string)
 
       creator = ao.json['linked_agents'].select {|a| a['role'] == 'creator'}.first
-      mapped['ItemAuthor'] = creator['_resolved']['title'] if creator
+      result['ItemAuthor'] = creator['_resolved']['title'] if creator
 
       result
     else
