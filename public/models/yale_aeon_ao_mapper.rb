@@ -230,11 +230,13 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
   end
 
 
+  # FIXME is it ok for the from_val to be nil?
   def map_request_values(mapped, from, to, &block)
     mapped['requests'].each do |r|
       ix = r['Request']
-      new_val = yield r["#{from}_#{ix}"] if block_given?
-      r["#{to}_#{ix}"] = new_val || r["#{from}_#{ix}"]
+      from_val = r["#{from}_#{ix}"]
+      new_val = yield r["#{from}_#{ix}"] if !from_val.nil? && block_given?
+      r["#{to}_#{ix}"] = new_val || from_val
     end
   end
 
