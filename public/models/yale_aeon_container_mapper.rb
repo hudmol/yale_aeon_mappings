@@ -55,9 +55,7 @@ class YaleAeonContainerMapper < AeonRecordMapper
                                          .join(' ')
 
       # ItemInfo8 (access restriction types)
-      mappings['ItemInfo8'] = json['notes'].select {|n| n['type'] == 'accessrestrict'}
-                                          .map {|n| n['rights_restriction']['local_access_restriction_type']}
-                                          .flatten.uniq.join(' ')
+      mappings['ItemInfo8'] = YaleAeonUtils.active_restrictions(json['active_restrictions'])
 
       #if we decide to repeat the title so that it's always in a consistent place.
       mappings['ItemInfo12'] = mappings['collection_title']

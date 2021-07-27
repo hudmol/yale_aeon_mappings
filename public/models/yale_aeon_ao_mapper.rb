@@ -95,14 +95,8 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
                                          .map {|e| "#{e['number']} #{e['extent_type']}"}.join('; ')
 
     # ItemInfo8 (access restriction types)
-    mapped['ItemInfo8'] = json['notes'].select {|n| n['type'] == 'accessrestrict' && n.has_key?('rights_restriction')}
-                         .map {|n| n['rights_restriction']['local_access_restriction_type']}
-                         .flatten.uniq.join(' ')
+    mapped['ItemInfo8'] = YaleAeonUtils.active_restrictions(json['active_restrictions'])
 
-    # ItemInfo15 (active restrictions)
-    # FIXME: might need to go in another field
-    # FIXME: should only be included for photodup requests
-    mapped['ItemInfo15'] = YaleAeonUtils.active_restrictions(json['active_restrictions'])
 
     # The remainder are per request fields
 
