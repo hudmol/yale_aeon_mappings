@@ -250,6 +250,8 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
       # mapper per ASpaceRecordType, so we're going to force it to do double duty with
       # this ugly if statement.
 
+      selected_instances = Array(@requested_instance_indexes)
+
       resource = archivesspace.get_record(self.record.resolved_resource.fetch('uri'))
       ao = archivesspace.get_record(self.record.json.fetch('uri'))
 
@@ -271,15 +273,23 @@ class YaleAeonAOMapper < AeonArchivalObjectMapper
         instance.fetch('instance_type') != 'digital_object'
       }
 
-      result['ItemVolume'] = clean_for_aeon(first_instance.dig('sub_container', 'top_container', '_resolved', 'display_string'))
+      selected_instance_labels = selected_instances.map {|instance_idx|
+        instance = ao.json.fetch('instances', []).fetch(instance_idx)
+        top_container_display_string = instance.dig('sub_container', 'top_container', '_resolved', 'display_string')
 
-      sub_container = first_instance.fetch('sub_container')
-      folders = []
+        next if top_container_display_string.nil?
 
-      folders << sub_container['indicator_2'] if sub_container['type_2'] == 'folder'
-      folders << sub_container['indicator_3'] if sub_container['type_3'] == 'folder'
+        sub_container = instance.fetch('sub_container')
 
-      result['ItemEdition'] = clean_for_aeon(folders.join('; '))
+        label_parts = []
+        label_parts << clean_for_aeon(top_container_display_string)
+        label_parts << clean_for_aeon("Folder %s" % [sub_container['indicator_2']]) if sub_container['type_2'] == 'folder'
+        label_parts << clean_for_aeon("Folder %s" % [sub_container['indicator_3']]) if sub_container['type_3'] == 'folder'
+
+        label_parts.compact.join(" > ")
+      }.compact
+
+      result['ItemVolume'] = selected_instance_labels.join('; ')
 
       result['ItemTitle'] = clean_for_aeon(ao.display_string)
 
