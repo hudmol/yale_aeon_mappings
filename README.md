@@ -1,3 +1,9 @@
+
+---
+## Note: This is now defunct - it was merged into:
+https://github.com/hudmol/yale_as_requests
+---
+
 # Yale Aeon Mappings
 
 An ArchivesSpace plugin containing custom Aeon mappings for Yale University.
